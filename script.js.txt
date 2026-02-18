@@ -1,37 +1,52 @@
-// CONFIGURACIÓN DE HARPIA
-const SYSTEM_PROMPT = `Actúa como Harpia, experto curricular del MEDUCA Panamá. 
-Genera secuencias didácticas con Inicio, Desarrollo y Cierre, 
-usando indicadores de logro y evidencias reales.`;
+// CONFIGURACIÓN DE SEGURIDAD (Reemplaza el texto entre comillas con tu llave)
+const API_KEY = "AIzaSyAKFnTLWhdHvkfFx7KDxbBwf8Wz-JR1b9A"; 
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
 
-// Función para capturar los datos del formulario
-function iniciarGeneracion() {
+async function generarPlanificacion() {
     const materia = document.querySelector('select:nth-of-type(1)').value;
     const grado = document.querySelector('select:nth-of-type(2)').value;
     const tema = document.querySelector('input[type="text"]').value;
+    const boton = document.querySelector('button');
 
     if (!tema) {
-        alert("Por favor, escribe un tema para empezar.");
+        alert("Por favor, escribe un tema.");
         return;
     }
 
-    console.log(`Harpia preparando plan para: ${tema} de ${grado}`);
-    
-    // Cambiar el texto del botón para mostrar que está trabajando
-    const boton = document.querySelector('button');
     boton.innerText = "Harpia está pensando... 🦅";
     boton.disabled = true;
 
-    // Simulación de llamada a la IA (Aquí conectarás tu API Key después)
-    setTimeout(() => {
-        alert(`¡Listo! Harpia ha generado la planificación de ${tema}. 
-(Paso final: Conectar la API Key de Google Gemini para ver el resultado real).`);
+    // El "Prompt" o instrucción para la IA
+    const promptData = {
+        contents: [{
+            parts: [{
+                text: `Eres Harpia, experto en MEDUCA Panamá. Crea una planificación para ${materia} de ${grado} sobre: ${tema}. 
+                Usa el formato: Inicio, Desarrollo y Cierre. Incluye indicadores de logro.`
+            }]
+        }]
+    };
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(promptData)
+        });
+
+        const data = await response.json();
+        const textoIA = data.candidates[0].content.parts[0].text;
+
+        // Aquí mostramos el resultado (Por ahora en un alert, luego en el diseño)
+        alert("¡Planificación Generada!\n\n" + textoIA);
+        
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Hubo un error al conectar con el cerebro de Harpia.");
+    } finally {
         boton.innerText = "Generar con IA 🚀";
         boton.disabled = false;
-    }, 2000);
+    }
 }
 
-// Asignar la función al botón cuando la página cargue
 document.addEventListener('DOMContentLoaded', () => {
-    const botonGenerar = document.querySelector('button');
-    botonGenerar.onclick = iniciarGeneracion;
+    document.querySelector('button').onclick = generarPlanificacion;
 });
